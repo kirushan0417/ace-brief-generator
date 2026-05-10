@@ -186,6 +186,29 @@
   }
   .key-reset-btn:hover { background: var(--gold-dim); }
 
+  /* ───── USAGE TRACKER ───── */
+  .usage-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+  .usage-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: glow 2s ease-in-out infinite; }
+  @keyframes glow { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .usage-text { color: var(--text-muted); white-space: nowrap; }
+  .usage-text span { color: var(--gold-light); font-weight: 700; }
+  .billing-link {
+    background: transparent; border: 1px solid rgba(52,180,255,.3);
+    border-radius: var(--radius-sm); color: var(--blue);
+    padding: 5px 10px; font-size: 11px; cursor: pointer;
+    white-space: nowrap; text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+    transition: all .2s; font-family: inherit;
+  }
+  .billing-link:hover { background: rgba(52,180,255,.1); border-color: var(--blue); }
+
   /* ───── LAYOUT ───── */
   .app-body {
     display: grid;
@@ -468,6 +491,11 @@
     <p>ACE.com · USA Only · Instagram & Facebook · Sweepstakes Model</p>
   </div>
   <div class="header-right">
+    <div class="usage-bar">
+      <span class="usage-dot"></span>
+      <span class="usage-text">Session: <span id="briefCount">0</span> briefs · Est. <span id="estCost">$0.00</span></span>
+    </div>
+    <a class="billing-link" href="https://console.anthropic.com/settings/billing" target="_blank">💳 API Balance ↗</a>
     <button class="key-reset-btn" onclick="resetKey()">⚙ Change API Key</button>
   </div>
 </div>
@@ -630,6 +658,18 @@ OUTPUT FORMAT — respond ONLY with valid JSON array, no markdown, no explanatio
 
 let selectedMoment = null;
 let trendingMoments = [];
+
+// ── USAGE TRACKING ──
+let sessionBriefs = 0;
+let sessionCost = 0;
+const COST_PER_BRIEF = 0.02;
+
+function updateUsage(count) {
+  sessionBriefs += count;
+  sessionCost = sessionBriefs * COST_PER_BRIEF;
+  document.getElementById('briefCount').textContent = sessionBriefs;
+  document.getElementById('estCost').textContent = '$' + sessionCost.toFixed(2);
+}
 
 // ── KEY MANAGEMENT ──
 function saveKey() {
@@ -814,6 +854,7 @@ Return ONLY the JSON array.`;
 
     const briefs = JSON.parse(match[0]);
     renderBriefs(briefs, platform, objective, platformLabel);
+    updateUsage(briefs.length);
 
   } catch (err) {
     document.getElementById('mainOutput').innerHTML = `

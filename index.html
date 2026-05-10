@@ -337,6 +337,31 @@
     font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     font-family: 'Arial Black', sans-serif;
   }
+  .b-char-ace   { background: rgba(201,162,39,.15); color: var(--gold-light); border: 1px solid rgba(201,162,39,.3); }
+  .b-char-jack  { background: rgba(255,100,150,.12); color: var(--pink); border: 1px solid rgba(255,100,150,.25); }
+  .b-char-libby { background: rgba(160,120,255,.12); color: var(--purple); border: 1px solid rgba(160,120,255,.25); }
+  .b-char-multi { background: rgba(52,180,255,.12); color: var(--blue); border: 1px solid rgba(52,180,255,.25); }
+
+  .char-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .char-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .char-ace-av   { background: rgba(201,162,39,.2); }
+  .char-jack-av  { background: rgba(255,100,150,.2); }
+  .char-libby-av { background: rgba(160,120,255,.2); }
+  .char-multi-av { background: rgba(52,180,255,.2); }
+  .char-info { flex: 1; }
+  .char-name { font-size: 12px; font-weight: 700; color: var(--gold-light); margin-bottom: 3px; }
+  .char-direction { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
   .b-static  { background: rgba(52,180,255,.15); color: var(--blue); border: 1px solid rgba(52,180,255,.25); }
   .b-animated{ background: rgba(255,100,150,.15); color: var(--pink); border: 1px solid rgba(255,100,150,.25); }
   .b-reel    { background: rgba(160,120,255,.15); color: var(--purple); border: 1px solid rgba(160,120,255,.25); }
@@ -536,6 +561,19 @@
     </div>
 
     <div class="control-group">
+      <label>Featured Character</label>
+      <select id="character">
+        <option value="auto">Auto — AI Picks Best Fit</option>
+        <option value="ACE">🎩 ACE — The Host</option>
+        <option value="Jack Wilde">🃏 Jack Wilde — The Player</option>
+        <option value="Libby">⭐ Libby — The Wild Card</option>
+        <option value="ACE + Jack Wilde">🎩🃏 ACE + Jack Wilde</option>
+        <option value="ACE + Libby">🎩⭐ ACE + Libby</option>
+        <option value="All Three">🎭 All Three Characters</option>
+      </select>
+    </div>
+
+    <div class="control-group">
       <label>Content Theme</label>
       <select id="theme">
         <option value="auto">Auto — Match Trending Moment</option>
@@ -619,8 +657,36 @@ const SYSTEM_PROMPT = `You are the social media strategist for ACE.com, a US-bas
 BRAND IDENTITY:
 - ACE.com: "ACE Your Play" — America's #1 Social Casino
 - Tone: Energetic, vibrant, bold, fun, confident. FOMO-driven without pressure.
-- Visual: Vegas energy on social. Gold Coins as recurring visual. Uncle Sam mascot character. US lifestyle backdrops (sports bars, game days, home setups).
-- Direction: McLuck's upbeat energy meets Chumba's 'play for free, win for real' clarity — but louder, bolder, more culturally plugged-in.
+- Visual: Vegas energy on social. Gold Coins as recurring visual. US lifestyle backdrops (sports bars, game days, home setups).
+- Direction: Louder, bolder, and more culturally plugged-in than competitors.
+
+ACE.COM CHARACTERS — ALWAYS feature at least one character in every visual direction and animation spec. These are the brand's recurring cast:
+
+1. ACE (Hero Character)
+   - Appearance: Older gentleman, distinguished white beard, iconic red top hat with stars, patriotic red-white-blue suit, warm confident smile, always holding or surrounded by Gold Coins
+   - Personality: The wise, charismatic host. Generous, larger-than-life, always celebrating players. Think a cooler, hipper Uncle Sam who genuinely loves seeing people win.
+   - Best used for: Big win moments, welcome/onboarding, patriotic/holiday content, hosting giveaways, announcements
+   - Signature poses: Arms wide open in celebration, winking at camera, tipping his hat, showering players with Gold Coins
+
+2. JACK WILDE (The Player Character)
+   - Appearance: Shorter, stocky Latin-looking guy, sharp streetwear style, gold chain, confident swagger, always looking like he just hit a big win
+   - Personality: The relatable everyman who plays smart and wins big. Streetwise, charismatic, a bit cocky but loveable. Represents the player who knows the game.
+   - Best used for: Big win reactions, lifestyle content, sports tie-ins, relatable everyday moments, "I just won" energy
+   - Signature poses: Fist pump, pointing at screen showing a win, leaning back with arms crossed looking smug but happy, money fan gesture
+
+3. LIBBY (The Wild Card Character)
+   - Appearance: Attractive blonde woman, fun and stylish, bright energy, always looks like she's having the time of her life
+   - Personality: The free spirit who plays for pure fun and excitement. Social, shareable, infectious energy. Represents the lifestyle and community side of ACE.com.
+   - Best used for: Awareness content, community/social moments, giveaway reveals, lifestyle posts, "play anywhere" content
+   - Signature poses: Laughing with coins raining around her, phone in hand showing ACE.com, celebrating with friends, spinning slot reels
+
+CHARACTER PAIRING RULES:
+- ACE alone: Authority, announcements, big prizes, patriotic moments
+- Jack Wilde alone: Player POV, wins, sports, relatable hustle content
+- Libby alone: Lifestyle, fun, community, social/shareable content
+- ACE + Jack Wilde: Mentor/player dynamic — ACE rewards Jack for winning
+- ACE + Libby: Host presenting prize to winner — giveaway reveals
+- All three together: Major milestone moments, big campaign launches, holiday specials
 
 TWO OBJECTIVES (NEVER BLEND IN SAME POST):
 1. ACQUISITION (65%): CTA-driven, code-focused. Target all US states EXCEPT WA, ID, MI. Goal: FTP sign-ups & SC activations.
@@ -636,10 +702,7 @@ MANDATORY COMPLIANCE (every post):
 - NEVER use: "guaranteed win", "make money", "real money casino", "gambling"
 - NEVER target or imply targeting WA, ID, MI for acquisition
 
-COMPETITORS FOR REFERENCE (do not mention by name in briefs):
-- Chumba Casino, McLuck, LuckyLand, Crown Coins
-
-OUTPUT FORMAT — respond ONLY with valid JSON array, no markdown, no explanation:
+OUTPUT FORMAT — respond ONLY with valid JSON array, no markdown, no explanation. Always include a "character_used" field naming which character(s) appear and why:
 [
   {
     "headline": "...",
@@ -647,6 +710,8 @@ OUTPUT FORMAT — respond ONLY with valid JSON array, no markdown, no explanatio
     "cta": "..." or null,
     "visual_direction": "...",
     "animation_spec": "..." or null,
+    "character_used": "ACE / Jack Wilde / Libby / ACE + Jack Wilde / ACE + Libby / All Three",
+    "character_direction": "...",
     "hashtags": ["...", "..."],
     "post_format": "Static" | "Animated" | "Reel" | "Story",
     "aspect_ratio": "...",
@@ -795,6 +860,7 @@ async function generateBriefs() {
   const objective = document.getElementById('objective').value;
   const format    = document.getElementById('format').value;
   const theme     = document.getElementById('theme').value;
+  const character = document.getElementById('character').value;
   const count     = parseInt(document.getElementById('count').value);
   const promoCode = document.getElementById('promoCode').value.trim() || 'ACE200';
 
@@ -819,6 +885,7 @@ SETTINGS:
 - Objective: ${objective === 'acquisition' ? 'ACQUISITION (FTP sign-ups, conversion-focused, include CTA and promo code)' : 'BRAND AWARENESS (virality-first, entertainment, no hard sell)'}
 - Post format preference: ${format}
 - Content theme: ${theme === 'auto' ? 'Auto — pick the best theme to match the trending moment' : theme}
+- Featured character: ${character === 'auto' ? 'Auto — pick the best character(s) for this content type' : character}
 - Promo code for acquisition CTAs: ${promoCode}
 - Trending/cultural moment to tie into: ${selectedMoment || 'Use your web search to find the most relevant trending US moment right now and tie the brief to it'}
 
@@ -869,8 +936,30 @@ Return ONLY the JSON array.`;
   btn.textContent = '⚡ Generate Post Briefs';
 }
 
-// ── RENDER ──
-function renderBriefs(briefs, platform, objective, platformLabel) {
+  .b-char-ace    { background: rgba(201,162,39,.15); color: var(--gold-light); border: 1px solid rgba(201,162,39,.3); }
+  .b-char-jack   { background: rgba(255,100,150,.12); color: var(--pink); border: 1px solid rgba(255,100,150,.25); }
+  .b-char-libby  { background: rgba(160,120,255,.12); color: var(--purple); border: 1px solid rgba(160,120,255,.25); }
+  .b-char-multi  { background: rgba(52,180,255,.12); color: var(--blue); border: 1px solid rgba(52,180,255,.25); }
+
+  .char-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .char-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .char-ace-av   { background: rgba(201,162,39,.2); }
+  .char-jack-av  { background: rgba(255,100,150,.2); }
+  .char-libby-av { background: rgba(160,120,255,.2); }
+  .char-multi-av { background: rgba(52,180,255,.2); }
+  .char-info { flex: 1; }
+  .char-name { font-size: 12px; font-weight: 700; color: var(--gold-light); margin-bottom: 3px; }
+  .char-direction { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
   const platformClass = { both: 'b-both', ig: 'b-ig', fb: 'b-fb' }[platform];
   const objClass = objective === 'acquisition' ? 'b-acq' : 'b-aware';
   const objLabel = objective === 'acquisition' ? 'Acquisition' : 'Awareness';
@@ -884,17 +973,39 @@ function renderBriefs(briefs, platform, objective, platformLabel) {
     const cta = brief.cta ? brief.cta.replace(/\{CODE\}/g, document.getElementById('promoCode').value.trim() || 'ACE200') : null;
     const captionBody = (brief.caption_body || '').replace(/\{CODE\}/g, document.getElementById('promoCode').value.trim() || 'ACE200');
 
+    const charUsed = brief.character_used || 'ACE';
+    const isMulti = charUsed.includes('+') || charUsed.toLowerCase().includes('all');
+    const isJack  = !isMulti && charUsed.toLowerCase().includes('jack');
+    const isLibby = !isMulti && charUsed.toLowerCase().includes('libby');
+    const isAce   = !isMulti && !isJack && !isLibby;
+
+    const charBadgeClass = isMulti ? 'b-char-multi' : isJack ? 'b-char-jack' : isLibby ? 'b-char-libby' : 'b-char-ace';
+    const charAvClass    = isMulti ? 'char-multi-av' : isJack ? 'char-jack-av' : isLibby ? 'char-libby-av' : 'char-ace-av';
+    const charEmoji      = isMulti ? '🎭' : isJack ? '🃏' : isLibby ? '⭐' : '🎩';
+
     html += `
     <div class="brief-card">
       <div class="brief-header">
         <span class="badge ${formatClass(brief.post_format)}">${brief.post_format || 'Static'}</span>
         <span class="badge ${platformClass}">${platformLabel}</span>
         <span class="badge ${objClass}">${objLabel}</span>
+        <span class="badge ${charBadgeClass}">${charEmoji} ${charUsed}</span>
         ${brief.trending_moment_used ? `<span class="badge b-moment">📍 ${brief.trending_moment_used}</span>` : ''}
         <button class="copy-btn" onclick="copyBrief(${i})">Copy Brief</button>
       </div>
 
       <div class="brief-body" id="brief-${i}">
+
+        <div>
+          <div class="brief-section-title">Character Direction</div>
+          <div class="char-box">
+            <div class="char-avatar ${charAvClass}">${charEmoji}</div>
+            <div class="char-info">
+              <div class="char-name">${charUsed}</div>
+              <div class="char-direction">${brief.character_direction || 'See visual direction below for character usage.'}</div>
+            </div>
+          </div>
+        </div>
 
         <div>
           <div class="brief-section-title">Visual Direction</div>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ACE.com — Social Brief Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a227;
+    --gold-light: #f0c842;
+    --gold-dim: rgba(201,162,39,0.18);
+    --gold-border: rgba(201,162,39,0.28);
+    --bg: #08081a;
+    --bg2: #0d0d26;
+    --bg3: #12123a;
+    --surface: rgba(255,255,255,0.04);
+    --surface2: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --text: #f0eefd;
+    --text-muted: rgba(240,238,253,0.5);
+    --text-dim: rgba(240,238,253,0.3);
+    --red: #ff4d4d;
+    --green: #32dc96;
+    --blue: #34b4ff;
+    --pink: #ff6496;
+    --purple: #a078ff;
+    --orange: #ffa032;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ───── PASSWORD OVERLAY ───── */
+  #pwOverlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: linear-gradient(160deg, #06061a 0%, #100828 60%, #060616 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .pw-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-lg);
+    padding: 44px 36px;
+    max-width: 420px; width: 100%;
+    text-align: center;
+  }
+  .pw-logo {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #08081a; font-weight: 900; font-size: 28px; letter-spacing: 2px;
+    padding: 10px 20px; border-radius: 8px;
+    font-family: 'Arial Black', sans-serif;
+    margin-bottom: 24px;
+  }
+  .pw-box h2 { font-size: 18px; font-weight: 700; color: var(--gold-light); margin-bottom: 6px; }
+  .pw-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .pw-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm);
+    color: var(--text); padding: 12px 14px;
+    font-size: 15px; font-family: monospace;
+    outline: none; margin-bottom: 12px;
+    transition: border-color .2s; letter-spacing: 3px;
+    text-align: center;
+  }
+  .pw-input:focus { border-color: var(--gold); }
+  .pw-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; border-radius: var(--radius-sm);
+    color: #08081a; font-weight: 800; font-size: 14px;
+    font-family: 'Arial Black', sans-serif; letter-spacing: 1px;
+    padding: 13px; cursor: pointer; text-transform: uppercase;
+    transition: opacity .2s;
+  }
+  .pw-submit:hover { opacity: .9; }
+  #pwError {
+    color: var(--red); font-size: 12px; margin-bottom: 10px;
+    display: none;
+  }
+  .pw-shake { animation: shake .4s ease; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  /* ───── OVERLAY / KEY SCREEN ───── */
+  #keyOverlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: linear-gradient(160deg, #06061a 0%, #100828 60%, #060616 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .key-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-lg);
+    padding: 40px 36px;
+    max-width: 480px; width: 100%;
+    text-align: center;
+  }
+  .key-logo {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #08081a;
+    font-weight: 900; font-size: 28px; letter-spacing: 2px;
+    padding: 10px 20px; border-radius: 8px;
+    font-family: 'Arial Black', sans-serif;
+    margin-bottom: 24px;
+  }
+  .key-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--gold-light); }
+  .key-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; }
+  .key-box a { color: var(--gold); }
+  .key-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: monospace;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color .2s;
+  }
+  .key-input:focus { border-color: var(--gold); }
+  .key-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; border-radius: var(--radius-sm);
+    color: #08081a; font-weight: 800; font-size: 14px;
+    font-family: 'Arial Black', sans-serif; letter-spacing: 1px;
+    padding: 13px; cursor: pointer; text-transform: uppercase;
+    transition: opacity .2s;
+  }
+  .key-submit:hover { opacity: .9; }
+  .key-note {
+    margin-top: 16px; font-size: 11px; color: var(--text-dim);
+    line-height: 1.6;
+  }
+  #keyError { color: var(--red); font-size: 12px; margin-bottom: 10px; display: none; }
+
+  /* ───── HEADER ───── */
+  .header {
+    background: linear-gradient(135deg, #0b0b28 0%, #16094a 50%, #0b1a48 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 16px 28px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #08081a; font-weight: 900; font-size: 20px;
+    padding: 7px 13px; border-radius: 6px; letter-spacing: 1px;
+    font-family: 'Arial Black', sans-serif; flex-shrink: 0;
+  }
+  .header-text h1 { font-size: 16px; font-weight: 700; color: var(--gold-light); }
+  .header-text p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .header-right {
+    margin-left: auto; display: flex; align-items: center; gap: 10px;
+  }
+  .key-reset-btn {
+    background: transparent; border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm); color: var(--gold);
+    padding: 5px 12px; font-size: 11px; cursor: pointer;
+    letter-spacing: .5px; transition: all .2s;
+  }
+  .key-reset-btn:hover { background: var(--gold-dim); }
+
+  /* ───── LAYOUT ───── */
+  .app-body {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: calc(100vh - 62px);
+  }
+
+  /* ───── SIDEBAR ───── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+    position: sticky; top: 62px;
+    height: calc(100vh - 62px);
+  }
+
+  .section-label {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px; font-weight: 700;
+  }
+
+  .control-group { margin-bottom: 16px; }
+  .control-group label {
+    display: block; font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .control-group select, .control-group input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm);
+    color: var(--text); padding: 9px 11px; font-size: 13px;
+    outline: none; cursor: pointer; transition: border-color .2s;
+    font-family: inherit;
+  }
+  .control-group select:focus, .control-group input:focus { border-color: var(--gold); }
+  .control-group select option { background: #12123a; }
+
+  .trending-section { margin-bottom: 20px; }
+  .trending-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .refresh-btn {
+    background: transparent; border: 1px solid var(--gold-border);
+    border-radius: 20px; color: var(--gold);
+    padding: 3px 10px; font-size: 10px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; transition: all .2s;
+    font-family: inherit;
+  }
+  .refresh-btn:hover { background: var(--gold-dim); }
+  .refresh-btn.spinning .spin-icon { display: inline-block; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .moments-grid { display: flex; flex-direction: column; gap: 6px; }
+  .moment-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 11px;
+    font-size: 12px; color: var(--text-muted);
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .moment-chip:hover { border-color: var(--gold-border); color: var(--text); }
+  .moment-chip.active {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .moment-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+  .moment-chip.active .moment-dot { background: var(--gold-light); }
+  .trending-loading {
+    font-size: 12px; color: var(--text-dim); padding: 10px 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
+  .generate-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; border-radius: var(--radius-sm);
+    color: #08081a; font-size: 14px; font-weight: 800;
+    font-family: 'Arial Black', sans-serif; letter-spacing: 1px;
+    cursor: pointer; text-transform: uppercase; transition: all .2s;
+    margin-top: 8px;
+  }
+  .generate-btn:hover { box-shadow: 0 6px 24px rgba(201,162,39,.4); transform: translateY(-1px); }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ───── MAIN OUTPUT ───── */
+  .main-output { padding: 28px 28px; overflow-y: auto; }
+
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 400px;
+    color: var(--text-dim); text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 16px; color: var(--text-muted); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; max-width: 300px; line-height: 1.6; }
+
+  .briefs-grid { display: flex; flex-direction: column; gap: 24px; }
+
+  .brief-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .brief-card:hover { border-color: var(--gold-border); }
+
+  .brief-header {
+    background: linear-gradient(135deg, rgba(201,162,39,.12), rgba(201,162,39,.05));
+    border-bottom: 1px solid rgba(201,162,39,.18);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+
+  .badge {
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Arial Black', sans-serif;
+  }
+  .b-static  { background: rgba(52,180,255,.15); color: var(--blue); border: 1px solid rgba(52,180,255,.25); }
+  .b-animated{ background: rgba(255,100,150,.15); color: var(--pink); border: 1px solid rgba(255,100,150,.25); }
+  .b-reel    { background: rgba(160,120,255,.15); color: var(--purple); border: 1px solid rgba(160,120,255,.25); }
+  .b-story   { background: rgba(255,160,50,.15); color: var(--orange); border: 1px solid rgba(255,160,50,.25); }
+  .b-ig      { background: rgba(225,48,108,.12); color: #e1306c; border: 1px solid rgba(225,48,108,.2); }
+  .b-fb      { background: rgba(66,103,178,.12); color: #7b9ee8; border: 1px solid rgba(66,103,178,.2); }
+  .b-both    { background: rgba(160,120,255,.12); color: var(--purple); border: 1px solid rgba(160,120,255,.2); }
+  .b-acq     { background: rgba(50,220,150,.12); color: var(--green); border: 1px solid rgba(50,220,150,.2); }
+  .b-aware   { background: rgba(201,162,39,.12); color: var(--gold); border: 1px solid var(--gold-border); }
+  .b-trend   { background: rgba(255,77,77,.12); color: var(--red); border: 1px solid rgba(255,77,77,.2); }
+  .b-moment  { background: rgba(255,160,50,.1); color: var(--orange); border: 1px solid rgba(255,160,50,.2); }
+
+  .brief-body { padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; }
+
+  .brief-section-title {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 7px; font-weight: 700;
+  }
+
+  .visual-box {
+    background: rgba(201,162,39,.05);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 12px 14px;
+    font-size: 13px; color: rgba(240,238,253,.85); line-height: 1.65;
+  }
+
+  .anim-box {
+    background: rgba(160,120,255,.06);
+    border: 1px solid rgba(160,120,255,.18);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-size: 13px; color: rgba(240,238,253,.75); line-height: 1.65;
+  }
+
+  .copy-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+  }
+  .copy-headline {
+    font-size: 18px; font-weight: 800; color: var(--gold-light);
+    line-height: 1.3; margin-bottom: 10px;
+    font-family: 'Arial Black', sans-serif;
+  }
+  .copy-divider { height: 1px; background: var(--border); margin-bottom: 10px; }
+  .copy-body { font-size: 13px; color: rgba(240,238,253,.82); line-height: 1.7; }
+  .copy-cta {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--gold-light); font-weight: 700; line-height: 1.6;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .hashtags-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+  .hashtag {
+    background: rgba(201,162,39,.07);
+    border: 1px solid rgba(201,162,39,.18);
+    border-radius: 4px; padding: 2px 8px;
+    font-size: 11px; font-family: monospace;
+    color: rgba(201,162,39,.85);
+  }
+
+  .spec-list { display: flex; flex-direction: column; gap: 5px; }
+  .spec-item { font-size: 12px; color: var(--text-dim); }
+  .spec-item span { color: rgba(240,238,253,.75); font-weight: 600; }
+
+  .compliance-box {
+    background: rgba(255,77,77,.05);
+    border: 1px solid rgba(255,77,77,.15);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-size: 12px; color: rgba(255,180,180,.8); line-height: 1.7;
+  }
+  .compliance-box strong { color: rgba(255,140,140,.9); }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-sm);
+    color: var(--gold); padding: 4px 12px;
+    font-size: 11px; cursor: pointer;
+    margin-left: auto; display: block; width: fit-content;
+    margin-bottom: -4px;
+    transition: all .2s; font-family: inherit;
+  }
+  .copy-btn:hover { background: var(--gold-dim); }
+
+  .generating-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 400px; gap: 16px;
+  }
+  .spinner {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    animation: spin .8s linear infinite;
+  }
+  .generating-state p { color: var(--text-muted); font-size: 13px; }
+  .generating-state .gen-sub { font-size: 11px; color: var(--text-dim); }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 768px) {
+    .app-body { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* ───── SCROLLBAR ───── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(201,162,39,.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ PASSWORD OVERLAY ══════════ -->
+<div id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">ACE</div>
+    <h2>Team Access Only</h2>
+    <p>Enter the password to access the ACE.com Brief Generator</p>
+    <div id="pwError">Incorrect password. Try again.</div>
+    <input class="pw-input" type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <button class="pw-submit" onclick="checkPassword()">Enter ⚡</button>
+  </div>
+</div>
+
+<!-- ══════════ API KEY OVERLAY ══════════ -->
+<div id="keyOverlay">
+  <div class="key-box">
+    <div class="key-logo">ACE</div>
+    <h2>Connect Your Anthropic API Key</h2>
+    <p>This tool uses Claude AI with live web search to pull real-time trending US cultural moments into your briefs — Drake album drops, sports results, viral moments, everything.<br><br>Your key is saved locally in your browser. It never leaves your device.</p>
+    <div id="keyError">Invalid key format. Keys start with sk-ant-</div>
+    <input class="key-input" type="password" id="keyInput" placeholder="sk-ant-api03-..." />
+    <button class="key-submit" onclick="saveKey()">Save Key & Launch ⚡</button>
+    <div class="key-note">
+      Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> — no Claude Pro needed.<br>
+      Pay-as-you-go. Each brief generation costs ~$0.01–0.03 USD.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ HEADER ══════════ -->
+<div class="header">
+  <div class="logo">ACE</div>
+  <div class="header-text">
+    <h1>Social Media Brief Generator</h1>
+    <p>ACE.com · USA Only · Instagram & Facebook · Sweepstakes Model</p>
+  </div>
+  <div class="header-right">
+    <button class="key-reset-btn" onclick="resetKey()">⚙ Change API Key</button>
+  </div>
+</div>
+
+<!-- ══════════ APP BODY ══════════ -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="section-label">Brief Settings</div>
+
+    <div class="control-group">
+      <label>Platform</label>
+      <select id="platform">
+        <option value="both">Instagram + Facebook</option>
+        <option value="ig">Instagram Only</option>
+        <option value="fb">Facebook Only</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Objective</label>
+      <select id="objective">
+        <option value="acquisition">Acquisition — Drive FTP Sign-ups</option>
+        <option value="awareness">Brand Awareness — Virality First</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Post Format</label>
+      <select id="format">
+        <option value="mixed">Mix (Static + Animated)</option>
+        <option value="static">Static Feed Post</option>
+        <option value="animated">Animated / Motion Post</option>
+        <option value="reel">Reel / Short Video Brief</option>
+        <option value="story">Story Format</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Content Theme</label>
+      <select id="theme">
+        <option value="auto">Auto — Match Trending Moment</option>
+        <option value="bigwin">Big Win / SC Hit Reaction</option>
+        <option value="giveaway">Giveaway / Sweepstakes</option>
+        <option value="lifestyle">Lifestyle / Relatable</option>
+        <option value="sports">US Sports Tie-In</option>
+        <option value="holiday">US Holiday / Seasonal</option>
+        <option value="gamespotlight">Game Spotlight</option>
+        <option value="community">Community / Milestone</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Number of Briefs</label>
+      <select id="count">
+        <option value="1">1 Brief</option>
+        <option value="2" selected>2 Briefs</option>
+        <option value="3">3 Briefs</option>
+        <option value="4">4 Briefs</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Promo Code (optional)</label>
+      <input type="text" id="promoCode" placeholder="e.g. ACE200" />
+    </div>
+
+    <div class="trending-section">
+      <div class="trending-header">
+        <div class="section-label" style="margin:0">Live Trending Moments</div>
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchTrending()">
+          <span class="spin-icon">↻</span> Refresh
+        </button>
+      </div>
+      <div id="momentsContainer">
+        <div class="trending-loading">
+          <span class="pulse">●</span> Loading US trends...
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateBriefs()">
+      ⚡ Generate Post Briefs
+    </button>
+  </div>
+
+  <!-- MAIN OUTPUT -->
+  <div class="main-output" id="mainOutput">
+    <div class="empty-state">
+      <div class="empty-icon">🃏</div>
+      <h3>Ready to deal your briefs</h3>
+      <p>Configure your settings, pick a trending moment (or let the AI choose), and hit Generate.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── PASSWORD ──
+const SITE_PASSWORD = 'AceYourPlay2025';
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === SITE_PASSWORD) {
+    localStorage.setItem('ace_pw_ok', '1');
+    document.getElementById('pwOverlay').style.display = 'none';
+    if (getKey()) fetchTrending();
+  } else {
+    const box = document.getElementById('pwBox') || document.querySelector('.pw-box');
+    box && box.classList.add('pw-shake');
+    setTimeout(() => box && box.classList.remove('pw-shake'), 400);
+    document.getElementById('pwError').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+const SYSTEM_PROMPT = `You are the social media strategist for ACE.com, a US-based Social Casino operating under a Sweepstakes model. You generate professional creative briefs for Instagram and Facebook content.
+
+BRAND IDENTITY:
+- ACE.com: "ACE Your Play" — America's #1 Social Casino
+- Tone: Energetic, vibrant, bold, fun, confident. FOMO-driven without pressure.
+- Visual: Vegas energy on social. Gold Coins as recurring visual. Uncle Sam mascot character. US lifestyle backdrops (sports bars, game days, home setups).
+- Direction: McLuck's upbeat energy meets Chumba's 'play for free, win for real' clarity — but louder, bolder, more culturally plugged-in.
+
+TWO OBJECTIVES (NEVER BLEND IN SAME POST):
+1. ACQUISITION (65%): CTA-driven, code-focused. Target all US states EXCEPT WA, ID, MI. Goal: FTP sign-ups & SC activations.
+2. AWARENESS (35%): Entertainment-first, no hard sell. National reach. Goal: brand recall & virality.
+
+MANDATORY COMPLIANCE (every post):
+- 18+ only
+- No Purchase Necessary to play or enter
+- Void where prohibited by law
+- T&Cs Apply
+- ACE.com is free-to-play — not real money gambling
+- #ad or #sponsored at START of caption (FTC rule)
+- NEVER use: "guaranteed win", "make money", "real money casino", "gambling"
+- NEVER target or imply targeting WA, ID, MI for acquisition
+
+COMPETITORS FOR REFERENCE (do not mention by name in briefs):
+- Chumba Casino, McLuck, LuckyLand, Crown Coins
+
+OUTPUT FORMAT — respond ONLY with valid JSON array, no markdown, no explanation:
+[
+  {
+    "headline": "...",
+    "caption_body": "...",
+    "cta": "..." or null,
+    "visual_direction": "...",
+    "animation_spec": "..." or null,
+    "hashtags": ["...", "..."],
+    "post_format": "Static" | "Animated" | "Reel" | "Story",
+    "aspect_ratio": "...",
+    "duration": "...",
+    "compliance_note": "...",
+    "trending_moment_used": "..." or null
+  }
+]`;
+
+let selectedMoment = null;
+let trendingMoments = [];
+
+// ── KEY MANAGEMENT ──
+function saveKey() {
+  const key = document.getElementById('keyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('keyError').style.display = 'block';
+    return;
+  }
+  localStorage.setItem('ace_api_key', key);
+  document.getElementById('keyOverlay').style.display = 'none';
+  fetchTrending();
+}
+
+function resetKey() {
+  localStorage.removeItem('ace_api_key');
+  document.getElementById('keyInput').value = '';
+  document.getElementById('keyError').style.display = 'none';
+  document.getElementById('keyOverlay').style.display = 'flex';
+}
+
+function getKey() {
+  return localStorage.getItem('ace_api_key');
+}
+
+// ── ON LOAD ──
+window.addEventListener('load', () => {
+  if (!localStorage.getItem('ace_pw_ok')) {
+    document.getElementById('pwOverlay').style.display = 'flex';
+    document.getElementById('keyOverlay').style.display = 'none';
+    document.getElementById('pwInput').focus();
+    return;
+  }
+  document.getElementById('pwOverlay').style.display = 'none';
+  if (getKey()) {
+    document.getElementById('keyOverlay').style.display = 'none';
+    fetchTrending();
+  }
+});
+
+// ── TRENDING FETCH ──
+async function fetchTrending() {
+  const key = getKey();
+  if (!key) return;
+
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('momentsContainer').innerHTML =
+    '<div class="trending-loading"><span class="pulse">●</span> Searching US trends right now...</div>';
+
+  selectedMoment = null;
+
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Today is ${today}. Search for what is trending RIGHT NOW in the USA — sports events, music releases (album drops, singles), pop culture moments, viral social media trends, US holidays or observances this week, major TV/entertainment events, celebrity news. Return ONLY a JSON array of 10 trending moments relevant for social casino content in the USA. Each item: {"emoji":"...","label":"...","category":"sports|music|culture|holiday|viral"}. No markdown, just the JSON array.`
+        }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) {
+      trendingMoments = JSON.parse(match[0]);
+      renderMoments(trendingMoments);
+    } else {
+      throw new Error('No JSON');
+    }
+  } catch (e) {
+    trendingMoments = [
+      { emoji: '🏀', label: 'NBA Playoffs', category: 'sports' },
+      { emoji: '🇺🇸', label: 'Memorial Day Weekend', category: 'holiday' },
+      { emoji: '🥊', label: 'UFC Fight Night', category: 'sports' },
+      { emoji: '🎵', label: 'New Music Friday', category: 'music' },
+      { emoji: '⚾', label: 'MLB Season', category: 'sports' },
+      { emoji: '📱', label: 'Viral TikTok Trend', category: 'viral' },
+      { emoji: '🎓', label: 'Graduation Season', category: 'culture' },
+      { emoji: '🏈', label: 'NFL Offseason News', category: 'sports' }
+    ];
+    renderMoments(trendingMoments);
+  }
+
+  btn.classList.remove('spinning');
+}
+
+function renderMoments(moments) {
+  const container = document.getElementById('momentsContainer');
+  container.innerHTML = '<div class="moments-grid">' +
+    moments.map(m => `
+      <div class="moment-chip" onclick="toggleMoment(this, '${m.label.replace(/'/g,"\\'")}')">
+        <span class="moment-dot"></span>
+        <span>${m.emoji} ${m.label}</span>
+      </div>`
+    ).join('') +
+    '</div>';
+}
+
+function toggleMoment(el, label) {
+  document.querySelectorAll('.moment-chip').forEach(c => c.classList.remove('active'));
+  if (selectedMoment === label) {
+    selectedMoment = null;
+  } else {
+    el.classList.add('active');
+    selectedMoment = label;
+  }
+}
+
+// ── GENERATE BRIEFS ──
+async function generateBriefs() {
+  const key = getKey();
+  if (!key) { resetKey(); return; }
+
+  const platform  = document.getElementById('platform').value;
+  const objective = document.getElementById('objective').value;
+  const format    = document.getElementById('format').value;
+  const theme     = document.getElementById('theme').value;
+  const count     = parseInt(document.getElementById('count').value);
+  const promoCode = document.getElementById('promoCode').value.trim() || 'ACE200';
+
+  const platformLabel = { both: 'Instagram + Facebook', ig: 'Instagram', fb: 'Facebook' }[platform];
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  document.getElementById('mainOutput').innerHTML = `
+    <div class="generating-state">
+      <div class="spinner"></div>
+      <p>Claude is searching trends & building your briefs...</p>
+      <p class="gen-sub">This takes 10–20 seconds for web search + brief generation</p>
+    </div>`;
+
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const userPrompt = `Today is ${today}. Generate ${count} social media post brief(s) for ACE.com.
+
+SETTINGS:
+- Platform: ${platformLabel}
+- Objective: ${objective === 'acquisition' ? 'ACQUISITION (FTP sign-ups, conversion-focused, include CTA and promo code)' : 'BRAND AWARENESS (virality-first, entertainment, no hard sell)'}
+- Post format preference: ${format}
+- Content theme: ${theme === 'auto' ? 'Auto — pick the best theme to match the trending moment' : theme}
+- Promo code for acquisition CTAs: ${promoCode}
+- Trending/cultural moment to tie into: ${selectedMoment || 'Use your web search to find the most relevant trending US moment right now and tie the brief to it'}
+
+${selectedMoment ? '' : 'IMPORTANT: Search the web for what is trending in the USA today and build the brief around a real current moment (music releases, sports, pop culture, viral events, etc). Include what you found in trending_moment_used.'}
+
+For ACQUISITION briefs: always include a clear CTA with the promo code, reference Sweeps Coins welcome bonus, explain sign-up steps.
+For AWARENESS briefs: entertainment-first, no hard CTA, focus on shareability and engagement hooks.
+
+Make every brief feel authentic to US culture — reference real vibes, real moments, real energy. The visual direction should be highly specific and actionable for a designer or creator.
+
+Return ONLY the JSON array.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error.message);
+
+    const text = data.content.map(b => b.text || '').join('');
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('No valid JSON in response');
+
+    const briefs = JSON.parse(match[0]);
+    renderBriefs(briefs, platform, objective, platformLabel);
+
+  } catch (err) {
+    document.getElementById('mainOutput').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p>${err.message}<br><br>Check your API key or try again.</p>
+      </div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Generate Post Briefs';
+}
+
+// ── RENDER ──
+function renderBriefs(briefs, platform, objective, platformLabel) {
+  const platformClass = { both: 'b-both', ig: 'b-ig', fb: 'b-fb' }[platform];
+  const objClass = objective === 'acquisition' ? 'b-acq' : 'b-aware';
+  const objLabel = objective === 'acquisition' ? 'Acquisition' : 'Awareness';
+
+  const formatClass = f => ({ 'Static': 'b-static', 'Animated': 'b-animated', 'Reel': 'b-reel', 'Story': 'b-story' }[f] || 'b-static');
+
+  let html = '<div class="briefs-grid">';
+
+  briefs.forEach((brief, i) => {
+    const isAnimated = brief.post_format === 'Animated' || brief.post_format === 'Reel';
+    const cta = brief.cta ? brief.cta.replace(/\{CODE\}/g, document.getElementById('promoCode').value.trim() || 'ACE200') : null;
+    const captionBody = (brief.caption_body || '').replace(/\{CODE\}/g, document.getElementById('promoCode').value.trim() || 'ACE200');
+
+    html += `
+    <div class="brief-card">
+      <div class="brief-header">
+        <span class="badge ${formatClass(brief.post_format)}">${brief.post_format || 'Static'}</span>
+        <span class="badge ${platformClass}">${platformLabel}</span>
+        <span class="badge ${objClass}">${objLabel}</span>
+        ${brief.trending_moment_used ? `<span class="badge b-moment">📍 ${brief.trending_moment_used}</span>` : ''}
+        <button class="copy-btn" onclick="copyBrief(${i})">Copy Brief</button>
+      </div>
+
+      <div class="brief-body" id="brief-${i}">
+
+        <div>
+          <div class="brief-section-title">Visual Direction</div>
+          <div class="visual-box">${brief.visual_direction || ''}</div>
+        </div>
+
+        ${isAnimated && brief.animation_spec ? `
+        <div>
+          <div class="brief-section-title">Animation Spec</div>
+          <div class="anim-box">${brief.animation_spec}</div>
+        </div>` : ''}
+
+        <div>
+          <div class="brief-section-title">Copy</div>
+          <div class="copy-box">
+            <div class="copy-headline">${brief.headline || ''}</div>
+            <div class="copy-divider"></div>
+            <div class="copy-body">${captionBody}</div>
+            ${cta ? `<div class="copy-cta">${cta}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="brief-section-title">Hashtags</div>
+            <div class="hashtags-wrap">
+              ${(brief.hashtags || []).map(h => `<span class="hashtag">${h}</span>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="brief-section-title">Post Specs</div>
+            <div class="spec-list">
+              <div class="spec-item">Format: <span>${brief.post_format || '—'}</span></div>
+              <div class="spec-item">Ratio: <span>${brief.aspect_ratio || '—'}</span></div>
+              <div class="spec-item">Length: <span>${brief.duration || '—'}</span></div>
+              <div class="spec-item">FTC: <span>#ad at caption start</span></div>
+              ${objective === 'acquisition' ? '<div class="spec-item">States: <span>All US excl. WA, ID, MI</span></div>' : ''}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="brief-section-title">Compliance Checklist</div>
+          <div class="compliance-box">
+            <strong>⚠ MANDATORY ON EVERY POST:</strong><br>
+            ${brief.compliance_note || '18+ Only · No Purchase Necessary · Void Where Prohibited · T&Cs Apply · ACE.com is free-to-play — not real money gambling · #ad at START of caption (FTC) · Do NOT target WA, ID, MI (acquisition) · Do NOT use gambling language · All content pre-approved by KI before posting'}
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('mainOutput').innerHTML = html;
+}
+
+// ── COPY BRIEF ──
+function copyBrief(i) {
+  const el = document.getElementById(`brief-${i}`);
+  const text = el ? el.innerText : '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelectorAll('.copy-btn')[i];
+    if (btn) { btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = 'Copy Brief', 2000); }
+  });
+}
+</script>
+</body>
+</html>
